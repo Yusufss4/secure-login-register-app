@@ -1,0 +1,16 @@
+CFLAGS = -O3 -Wall -Wextra -Wpedantic
+
+test: test.o sha-256.o
+	$(CC) test.o sha-256.o -o test.out
+
+test.o: sha-256.h test.c
+
+sha-256.o: sha-256.h sha-256.c
+
+.PHONY: all
+all: test
+	./test
+
+.PHONY: clean
+clean:
+	rm -f test *.o
