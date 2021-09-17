@@ -1,8 +1,8 @@
-#include <assert.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <assert.h> //For testing
+#include <stdint.h> //Used for uint8_t etc.
+#include <stdio.h> //General C
+#include <stdlib.h>  //Memory Allocation
+#include <string.h> //strcpy,strlen etc.
 
 #include "sha-256.h"
 
