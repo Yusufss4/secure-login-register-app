@@ -19,39 +19,176 @@ static void hash_to_string(char string[65], const uint8_t hash[32])
 
 static void copyHash(uint8_t destHash[32], const uint8_t sourceHash[32])
 {	
-	printf("Concat Strings...\n");
 	size_t i;
 	for (i = 0; i < 32; i++) {
 		destHash[i] = sourceHash[i];
-		printf("%x", destHash[i]);
+		printf("%X", destHash[i]);
 	}
+	printf("\n");
 }
 
 static void printHash(const uint8_t sourceHash[32]) {
-	printf("Printing hash...\n");
 	size_t i;
 	for (i = 0; i < 32; i++) {
-		printf("%x", sourceHash[i]);
+		printf("%02X", sourceHash[i]);
 	}
-
+	printf("\n");
 }
 //------------------------------HASH FINISH-----------------------------//
 
+int userNameValidifier(const char* userName) {
+	return 1;
+}
+
+int inputValidifier(const char*input) {
+	return 1;
+}
+
+int eMailValidifier(const char *email) {
+	return 1;
+}
+
+int passwordValidifier(const char*password) {
+	return 1;
+}
+
+unsigned int getNumberOfUsers(unsigned int *numberOfUsers) {
+	//unsigned int numberOfUsers = 0;
+	char *fileName = "usersDbStats.bin";
+    FILE *file = NULL;
+    file = fopen(fileName, "rb+");
+    if (file == NULL)
+    {
+        printf("Cant open file: %s", fileName);
+		return 0;
+    }
+	fseek(file, 0, SEEK_SET);
+	fread(numberOfUsers, sizeof(*numberOfUsers), 1, file);
+	printf("Number or users in file: %d\n",*numberOfUsers);
+	
+	fclose(file);
+	return 1;
+
+}
+
+unsigned int saveNumberOfUsersToFile(const unsigned int numberOfUsers) {
+	char *fileName = "usersDbStats.bin";
+    FILE *file = NULL;
+    file = fopen(fileName, "rb+");
+    if (file == NULL)
+    {
+        printf("Cant open file: %s", fileName);
+		return 0;
+    }
+	fseek(file, 0, SEEK_SET);
+	fwrite(&numberOfUsers, sizeof(numberOfUsers), 1, file);
+	printf("Saved number of users to file: %d",numberOfUsers);
+	fclose(file);
+	return 1;
+}
+
+void cleanDatabase(void) {
+	fclose(fopen("usersDb.bin", "w"));
+	fclose(fopen("usersDbStats.bin", "w"));
+}
 
 
 //Note: change structure make hash second, add time if possible. 
 typedef struct
 {
-	unsigned int index; 
-	char fullName[100];
-	char eMail[100];
-	char username[100];
+	unsigned int index;
+	char userName[15]; 
 	uint8_t hashedPassword[32];
+	char fullName[100];
+	char eMail[254]; //max e-mail
 }User;
 
-unsigned int numberOfUsers; //Currently global make it private.
+//unsigned int numberOfUsers; //Currently global make it private.
 
 void registerUser() {
+	unsigned int numberOfUsers = 0;
+	char registerUserName[15];
+	int isValid = 0;
+
+	do {
+	printf("Enter userName: ");
+	scanf("%s",registerUserName);
+	isValid = userNameValidifier(registerUserName);
+	if(isValid == 0) {
+		printf("User name is not valid. Code = 0\n");
+	}
+	} while(!isValid); 
+
+	isValid = 0;
+	char registerFullName[100];
+	do {
+	printf("Enter your full name: ");
+	scanf("%s",registerFullName);
+	isValid = inputValidifier(registerFullName);
+	if(isValid == 0) {
+		printf("User name is not valid. Code = 0\n");
+	}
+	} while(!isValid);
+
+	isValid = 0;
+	char eMail[254];
+	do {
+	printf("Enter your e-mail: ");
+	scanf("%s",eMail);
+	isValid = eMailValidifier(eMail);
+	if(isValid == 0) {
+		printf("E-mail is not valid. Code = 0\n");
+	}
+	} while(!isValid);
+
+
+	isValid = 0;
+	char password[65];
+	do {
+	printf("Enter your password: ");
+	scanf("%s",password);
+	isValid = passwordValidifier(password);
+	if(isValid == 0) {
+		printf("Password is not valid. Code = 0\n");
+	}
+	} while(!isValid);
+
+	//Hash password. 
+	uint8_t hash[32];
+	calc_sha_256(hash,password, strlen(password));
+	printHash(hash);
+
+	getNumberOfUsers(&numberOfUsers);
+	
+	//Create new user.
+	User newUser;
+	numberOfUsers++;
+	newUser.index = numberOfUsers;
+	strcpy(newUser.userName,registerUserName);
+	strcpy(newUser.eMail,eMail);
+	strcpy(newUser.fullName,registerFullName);
+	copyHash(newUser.hashedPassword,hash);
+	
+
+	//Open file.
+	char *fileName = "usersDb.bin";
+    FILE *file = NULL;
+    file = fopen(fileName, "rb+");
+    if (file == NULL)
+    {
+        printf("Cant open file: %s", fileName);
+    }
+
+	//Write user information to the file.
+	fseek(file, ((numberOfUsers-1)*sizeof(newUser)), SEEK_SET);
+    fwrite(&newUser, sizeof(newUser), 1, file);
+	fclose(file);
+
+	//Write number of user information to file.
+	saveNumberOfUsersToFile(numberOfUsers);
+	
+
+
 	//Take inputs. 
 	//Hash password. 
 	//Create User struct from the info.
@@ -59,10 +196,36 @@ void registerUser() {
 	//Increase the number of users in statsDb.bin file.
 }
 
+void readAllUsers() {
+	char *fileName = "usersDb.bin";
+    FILE *file = NULL;
+	file = fopen(fileName, "rb+");
+    if (file == NULL)
+    {
+        printf("Cant open file: %s", fileName);
+    }
+
+	unsigned int numberOfUsers = 0;
+	getNumberOfUsers(&numberOfUsers);
+
+	User readUser;
+	for(unsigned int i = 0; i<numberOfUsers; i++) {
+	fread(&readUser, sizeof(readUser), 1, file);
+	//hash_to_string(hash_string_3, readUser.hashedPassword);
+    printf("\n-------------------------\n");
+    printf("Index      : %d\n", readUser.index);
+    printf("Full Name  : %s\n", readUser.fullName);
+	printf("eMail      : %s\n", readUser.eMail);
+	printf("User Name  : %s\n", readUser.userName);
+	printf("Hash: ");
+	printHash(readUser.hashedPassword); }
+	fclose(file);
+}
+
 
 void registerUserTest() {
 	printf("\nRegistering the user...\n");
-	//char enteredUsername[100] = "yusufss";
+	//char enteredUserName[100] = "yusufss";
 	//char enteredPassword[100] = "kedi";
 	//char enteredMail[100] = "yusufsss4@gmail.com";
 	uint8_t hash[32];
@@ -109,7 +272,7 @@ void registerUserTest() {
     printf("Index      : %d\n", readUser.index);
     printf("fullName       : %s\n", readUser.fullName);
 	printf("eMail       : %s\n", readUser.eMail);
-	printf("userName       : %s\n", readUser.username);
+	printf("userName       : %s\n", readUser.userName);
 	printf("Hash           : %s\n", hash_string_2);
 
 	char hash_string_3[65];
@@ -120,7 +283,7 @@ void registerUserTest() {
     printf("Index      : %d\n", readUser.index);
     printf("fullName       : %s\n", readUser.fullName);
 	printf("eMail       : %s\n", readUser.eMail);
-	printf("userName       : %s\n", readUser.username);
+	printf("userName       : %s\n", readUser.userName);
 	printf("Hash           : %s\n", hash_string_3);
 
 	printf("======= SIZES =======\n");
@@ -132,10 +295,10 @@ void registerUserTest() {
 	  SEEK_CUR - Current position.
 	  SEEK_END - End of file*/
 	  int sizeOfNewUser = 0;
-	sizeOfNewUser = sizeof(newUser.eMail) + sizeof(newUser.fullName) + sizeof(newUser.index) + sizeof(newUser.username);
+	sizeOfNewUser = sizeof(newUser.eMail) + sizeof(newUser.fullName) + sizeof(newUser.index) + sizeof(newUser.userName);
 	printf("Size of new User except hash: %d\n",sizeOfNewUser);
 
-	sizeOfNewUser = sizeof(secondUser.eMail) + sizeof(secondUser.fullName) + sizeof(secondUser.index) + sizeof(secondUser.username);
+	sizeOfNewUser = sizeof(secondUser.eMail) + sizeof(secondUser.fullName) + sizeof(secondUser.index) + sizeof(secondUser.userName);
 	printf("Size of second User except hash: %d\n",sizeOfNewUser);
 
 	/*Return to start, go from start of file to start of the first hash and save it to new hash.
@@ -151,7 +314,7 @@ void registerUserTest() {
     printf("Index      : %d\n", readUser.index);
     printf("fullName       : %s\n", readUser.fullName);
 	printf("eMail       : %s\n", readUser.eMail);
-	printf("userName       : %s\n", readUser.username);
+	printf("userName       : %s\n", readUser.userName);
 	printHash(readUser.hashedPassword);
 
 	fclose(file);
@@ -203,6 +366,9 @@ int main(void) {
 			readAllUsers();
             //listingMoviesSubMenu();
             break;
+		case 4:
+			cleanDatabase();
+            break;
         default:
             printf("Wrong value. Please enter again.\n");
             break;
@@ -218,11 +384,11 @@ int main(void) {
 
 void printMenu()
 {
-    printf("\nMain Menu: \n");
-    printf("1. Register User\n");
-	printf("2. List All Users\n");
-    //printf("2. Delete Movie\n");
-    //printf("3. List Movies\n");
+    printf("\n\nMain Menu: \n");
+    printf("1. Register User Test\n");
+	printf("2. Register User\n");
+	printf("3. List All Users\n");
+	printf("4. Clean Database\n");
     printf("0. Save and Exit From the Program.\n\n");
     printf("Enter your option: ");
 }
