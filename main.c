@@ -13,7 +13,7 @@ static void hash_to_string(char string[65], const uint8_t hash[32])
 {
 	size_t i;
 	for (i = 0; i < 32; i++) {
-		string += sprintf(string, "%02x", hash[i]);
+		string += sprintf(string, "%02X", hash[i]);
 	}
 }
 
@@ -22,7 +22,7 @@ static void copyHash(uint8_t destHash[32], const uint8_t sourceHash[32])
 	size_t i;
 	for (i = 0; i < 32; i++) {
 		destHash[i] = sourceHash[i];
-		printf("%X", destHash[i]);
+		printf("%02X", destHash[i]);
 	}
 	printf("\n");
 }
@@ -33,6 +33,17 @@ static void printHash(const uint8_t sourceHash[32]) {
 		printf("%02X", sourceHash[i]);
 	}
 	printf("\n");
+}
+
+static unsigned int compareHashes(uint8_t firstHash[32], const uint8_t secondHash[32]) {
+		printf("Comparing hashes..\n");
+		size_t i;
+	for (i = 0; i < 32; i++) {
+		if(firstHash[i] != secondHash[i]) {
+			return 0; //not equal.
+		}
+	}
+	return 1; //equal.
 }
 //------------------------------HASH FINISH-----------------------------//
 
@@ -71,6 +82,10 @@ unsigned int getNumberOfUsers(unsigned int *numberOfUsers) {
 
 }
 
+getHashOfUserByUserName(const char *scanBuffer,const uint8_t loginUserHash[32]) {
+	
+}
+
 unsigned int saveNumberOfUsersToFile(const unsigned int numberOfUsers) {
 	char *fileName = "usersDbStats.bin";
     FILE *file = NULL;
@@ -93,7 +108,7 @@ void cleanDatabase(void) {
 }
 
 
-//Note: change structure make hash second, add time if possible. 
+//Note: Add register time if possible. 
 typedef struct
 {
 	unsigned int index;
@@ -103,7 +118,71 @@ typedef struct
 	char eMail[254]; //max e-mail
 }User;
 
-//unsigned int numberOfUsers; //Currently global make it private.
+void loginUser() {
+
+	unsigned int numberOfUsers = 0;
+	char scanBuffer[245];
+	int isValid = 0;
+	int isUserName = 0;
+
+	do {
+	printf("Enter userName or e-mail: ");
+	scanf("%s",scanBuffer);
+	//if the string consist @ search by e-mail otherwise search by username.
+	if(strchr(scanBuffer, '@') != NULL) {
+	 isValid = eMailValidifier(scanBuffer);
+	 if(isValid == 0) {
+		printf("e-mail is not valid. Code = 0\n");
+	}
+	isUserName = 0;
+	}
+	else 
+	{
+	isValid = userNameValidifier(scanBuffer);
+	 if(isValid == 0) {
+		printf("userName is not valid. Code = 0\n");
+	}
+	isUserName = 1;
+	}
+	} while(!isValid); 
+	
+	char password[65];
+	printf("Enter your password: ");
+	scanf("%s",password);
+	printf("Password is not valid. Code = 0\n");
+
+	//Hash password. 
+	uint8_t loginUserHash[32];
+	calc_sha_256(loginUserHash,password, strlen(password));
+	printHash(loginUserHash);
+	
+	uint8_t findedUserHash[32];
+
+	if(isUserName == 1) {
+		//searchUserByUserName(scanBuffer);
+	 	if(getHashOfUserByUserName(scanBuffer,loginUserHash)) {
+			 printf("Username is found.\n");
+			 if(compareHashes(findedUserHash,loginUserHash)) {
+				 printf("Acess is granted. Go to another place..\n");
+			 }
+			 else {
+				 printf("Wrong password.\n");
+			 }
+		 }
+		else{
+			printf("Cant find the user.\n");
+		}
+		 
+	}
+	else 
+	{
+		//searchUserByEmail(scanBuffer);
+	}
+
+	
+
+}
+
 
 void registerUser() {
 	unsigned int numberOfUsers = 0;
