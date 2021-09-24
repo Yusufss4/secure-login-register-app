@@ -35,8 +35,12 @@ static void printHash(const uint8_t sourceHash[32]) {
 	printf("\n");
 }
 
-static unsigned int compareHashes(uint8_t firstHash[32], const uint8_t secondHash[32]) {
-		printf("Comparing hashes..\n");
+static unsigned int compareHashes(const uint8_t firstHash[32], const uint8_t secondHash[32]) {
+		printf("Comparing hashes...\n");
+		printf("Hash returned from user search: ");
+		printHash(firstHash);
+		printf("Hash from the user: ");
+		printHash(secondHash);
 		size_t i;
 	for (i = 0; i < 32; i++) {
 		if(firstHash[i] != secondHash[i]) {
@@ -45,7 +49,9 @@ static unsigned int compareHashes(uint8_t firstHash[32], const uint8_t secondHas
 	}
 	return 1; //equal.
 }
-//------------------------------HASH FINISH-----------------------------//
+//------------------------------HASH END-----------------------------//
+
+//------------------------------VALIDFY FUNCTIONS-----------------------------//
 
 int userNameValidifier(const char* userName) {
 	return 1;
@@ -62,6 +68,20 @@ int eMailValidifier(const char *email) {
 int passwordValidifier(const char*password) {
 	return 1;
 }
+
+//------------------------------VALIDFY FUNCTIONS END-----------------------------//
+
+//------------------------------USER STRUCT-----------------------------//
+//Note: Add register time if possible. 
+typedef struct
+{
+	unsigned int index;
+	char userName[15]; 
+	uint8_t hashedPassword[32];
+	char fullName[100];
+	char eMail[254]; //max e-mail
+}User;
+//------------------------------USER STRUC END-----------------------------//
 
 unsigned int getNumberOfUsers(unsigned int *numberOfUsers) {
 	//unsigned int numberOfUsers = 0;
@@ -82,8 +102,39 @@ unsigned int getNumberOfUsers(unsigned int *numberOfUsers) {
 
 }
 
-getHashOfUserByUserName(const char *scanBuffer,const uint8_t loginUserHash[32]) {
-	
+unsigned int getHashOfUserByUserName(const char *scanBuffer,uint8_t loginUserHash[32]) {
+	char *fileName = "usersDb.bin";
+    FILE *file = NULL;
+	file = fopen(fileName, "rb+");
+    if (file == NULL)
+    {
+        printf("Cant open file: %s", fileName);
+    }
+
+	unsigned int numberOfUsers = 0;
+	getNumberOfUsers(&numberOfUsers);
+
+	User readUser;
+	for(unsigned int i = 0; i<numberOfUsers; i++) {
+	fread(&readUser, sizeof(readUser), 1, file);
+	//hash_to_string(hash_string_3, readUser.hashedPassword);
+    printf("\n------------USER SEARCH for Login------------\n");
+    printf("Index      : %d\n", readUser.index);
+    printf("Full Name  : %s\n", readUser.fullName);
+	printf("eMail      : %s\n", readUser.eMail);
+	printf("User Name  : %s\n", readUser.userName);
+	printf("Hash: ");
+	printHash(readUser.hashedPassword); 
+	if(strcmp(scanBuffer,readUser.userName) == 0) {
+		printf("User is found. Returning hash.\n");
+		copyHash(loginUserHash,readUser.hashedPassword);
+		fclose(file);
+		return 1; 
+	} }
+	printf("User not found...\n");
+	fclose(file);
+	return 0;
+
 }
 
 unsigned int saveNumberOfUsersToFile(const unsigned int numberOfUsers) {
@@ -107,16 +158,6 @@ void cleanDatabase(void) {
 	fclose(fopen("usersDbStats.bin", "w"));
 }
 
-
-//Note: Add register time if possible. 
-typedef struct
-{
-	unsigned int index;
-	char userName[15]; 
-	uint8_t hashedPassword[32];
-	char fullName[100];
-	char eMail[254]; //max e-mail
-}User;
 
 void loginUser() {
 
@@ -149,7 +190,6 @@ void loginUser() {
 	char password[65];
 	printf("Enter your password: ");
 	scanf("%s",password);
-	printf("Password is not valid. Code = 0\n");
 
 	//Hash password. 
 	uint8_t loginUserHash[32];
@@ -160,7 +200,7 @@ void loginUser() {
 
 	if(isUserName == 1) {
 		//searchUserByUserName(scanBuffer);
-	 	if(getHashOfUserByUserName(scanBuffer,loginUserHash)) {
+	 	if(getHashOfUserByUserName(scanBuffer,findedUserHash)) {
 			 printf("Username is found.\n");
 			 if(compareHashes(findedUserHash,loginUserHash)) {
 				 printf("Acess is granted. Go to another place..\n");
@@ -441,11 +481,15 @@ int main(void) {
             //deleteMovie();
 			registerUser();
             break;
-        case 3:
+		case 3:
+            //deleteMovie();
+			loginUser();
+            break;
+        case 4:
 			readAllUsers();
             //listingMoviesSubMenu();
             break;
-		case 4:
+		case 5:
 			cleanDatabase();
             break;
         default:
@@ -466,8 +510,9 @@ void printMenu()
     printf("\n\nMain Menu: \n");
     printf("1. Register User Test\n");
 	printf("2. Register User\n");
-	printf("3. List All Users\n");
-	printf("4. Clean Database\n");
+	printf("3. Login User\n");
+	printf("4. List All Users\n");
+	printf("5. Clean Database\n");
     printf("0. Save and Exit From the Program.\n\n");
     printf("Enter your option: ");
 }
