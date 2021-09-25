@@ -1,6 +1,8 @@
 #ifndef LOGIN_REGISTER_H
 #define LOGIN_REGISTER_H
 
+#include <stdint.h> //Used for uint8_t etc.
+
 //------------------------------USER STRUCT-----------------------------//
 //Note: Add register time if possible.
 typedef struct

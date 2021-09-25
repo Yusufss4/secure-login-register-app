@@ -1,7 +1,6 @@
 //TODO: Currenty all user related things are in the main we will seperate them.
 //NEXT: There will be second binary file where we will hold the user statitcs like numberOfUsers.
 
-#include <stdint.h> //Used for uint8_t etc.
 #include <stdio.h>	//General C
 #include <stdlib.h> //Memory Allocation
 

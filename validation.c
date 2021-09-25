@@ -3,6 +3,9 @@
 
 int userNameValidifier(const char *userName)
 {
+    printf("Validating User Name: %s\n",userName);
+    
+
     return 1;
 }
 
