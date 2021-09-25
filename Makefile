@@ -1,8 +1,8 @@
 CFLAGS = -O3 -Wall -Wextra -Wpedantic
 CC = gcc
 
-Main: main.o sha-256.o validation.o hash-ops.o
-	$(CC) main.o sha-256.o validation.o hash-ops.o -o Main.out
+Main: main.o sha-256.o validation.o hash-ops.o login-register.o
+	$(CC) main.o sha-256.o validation.o hash-ops.o login-register.o -o Main.out
 
 SHATest: test.o sha-256.o
 	$(CC) test.o sha-256.o -o SHATest.out
@@ -15,6 +15,9 @@ main.o: main.c
 
 validation.o: validation.c
 	$(CC) -c validation.c
+
+login-register.o: login-register.c
+	$(CC) -c login-register.c
 
 hash-ops.o: hash-ops.c
 	$(CC) -c hash-ops.c
