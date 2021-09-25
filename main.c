@@ -137,6 +137,57 @@ unsigned int getHashOfUserByUserName(const char *scanBuffer,uint8_t loginUserHas
 
 }
 
+/* In the performance mode you dont need to read all the details of users, 
+by using the fseek we directly access username and password. Thus increasing overall performance*/
+unsigned int getHashOfUserByUserNamePerformanceMode(const char *scanBuffer,uint8_t findedUserHash[32]) {
+	char *fileName = "usersDb.bin";
+    FILE *file = NULL;
+	file = fopen(fileName, "rb+");
+    if (file == NULL)
+    {
+        printf("Cant open file: %s", fileName);
+    }
+
+	unsigned int numberOfUsers = 0;
+	getNumberOfUsers(&numberOfUsers);
+
+	User testUser;
+	const int totalSizeOfUser = sizeof(testUser);
+	const int totalBytesUntilUserName = sizeof(testUser.index);
+	char userName[15];
+	const int hashSize = sizeof(testUser.hashedPassword);
+	const int bytesLeftAfterHash = totalSizeOfUser - (totalBytesUntilUserName + sizeof(userName) + hashSize);
+
+
+	fseek(file,0,SEEK_SET); //start from the beginning of file.
+	for(unsigned int i = 0; i<numberOfUsers; i++) {
+
+	//Read username, fseek is after the username.
+	fseek(file,totalBytesUntilUserName,SEEK_CUR);
+	fread(&userName,sizeof(userName),1,file);
+	printf("Current userName: ");
+	printf("%s\n",userName);
+
+	//Compare the username with the given username if equal read hash and return. 
+	if(strcmp(scanBuffer,userName) == 0) {
+		printf("User is found. Returning hash.\n");
+		fread(findedUserHash, sizeof(testUser.hashedPassword), 1, file);
+	    printHash(findedUserHash);
+		fclose(file);
+		return 1; 
+	}
+	else {
+		fseek(file,hashSize,SEEK_CUR);
+		fseek(file,bytesLeftAfterHash,SEEK_CUR);
+	} 
+	
+	} 
+	printf("User not found...\n");
+	fclose(file);
+	return 0;
+
+}
+
 unsigned int saveNumberOfUsersToFile(const unsigned int numberOfUsers) {
 	char *fileName = "usersDbStats.bin";
     FILE *file = NULL;
@@ -200,7 +251,7 @@ void loginUser() {
 
 	if(isUserName == 1) {
 		//searchUserByUserName(scanBuffer);
-	 	if(getHashOfUserByUserName(scanBuffer,findedUserHash)) {
+	 	if(getHashOfUserByUserNamePerformanceMode(scanBuffer,findedUserHash)) {
 			 printf("Username is found.\n");
 			 if(compareHashes(findedUserHash,loginUserHash)) {
 				 printf("Acess is granted. Go to another place..\n");
@@ -242,7 +293,7 @@ void registerUser() {
 	char registerFullName[100];
 	do {
 	printf("Enter your full name: ");
-	scanf("%s",registerFullName);
+	scanf(" %[^\n]%*c",registerFullName); 
 	isValid = inputValidifier(registerFullName);
 	if(isValid == 0) {
 		printf("User name is not valid. Code = 0\n");
@@ -253,7 +304,7 @@ void registerUser() {
 	char eMail[254];
 	do {
 	printf("Enter your e-mail: ");
-	scanf("%s",eMail);
+	scanf(" %s",eMail);
 	isValid = eMailValidifier(eMail);
 	if(isValid == 0) {
 		printf("E-mail is not valid. Code = 0\n");
@@ -265,7 +316,7 @@ void registerUser() {
 	char password[65];
 	do {
 	printf("Enter your password: ");
-	scanf("%s",password);
+	scanf(" %s",password);
 	isValid = passwordValidifier(password);
 	if(isValid == 0) {
 		printf("Password is not valid. Code = 0\n");
