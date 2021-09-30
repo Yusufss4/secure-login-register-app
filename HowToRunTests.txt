@@ -1,0 +1,3 @@
+In this file you can find how you can run the tests. Note that these tests are not unit tests. 
+1.  gcc -c sha-256-test.c -I../include
+2.  gcc sha-256-test.o obj/sha-256.o -o ../bin/test.exe
