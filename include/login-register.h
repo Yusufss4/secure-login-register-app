@@ -3,6 +3,9 @@
 
 #include <stdint.h> //Used for uint8_t etc.
 
+#define userDbFileLocation "../db/usersDb.bin"
+#define userDbStatsFileLocation "../db/usersDbStats.bin"
+
 //------------------------------USER STRUCT-----------------------------//
 //Note: Add register time if possible.
 typedef struct
@@ -13,7 +16,10 @@ typedef struct
     char fullName[100];
     char eMail[254]; //max e-mail
 } User;
-//------------------------------USER STRUC END-----------------------------//
+//------------------------------USER STRUCT END-----------------------------//
+
+//extern char const userDbFileLocation[] = "../db/usersDb.bin";
+//extern char const userDbStatsFileLocation[] = "../db/usersDbStats.bin";
 
 unsigned int getNumberOfUsers(unsigned int *numberOfUsers);
 

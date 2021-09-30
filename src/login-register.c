@@ -2,20 +2,20 @@
 #include <stdint.h> //Used for uint8_t etc.
 #include <string.h> //strcpy,strlen etc.
 
-#include "validation.h" //Validation functions for e-mail,username and password.
-#include "hash-ops.h"	//Contains functions like hash copy, hash compare etc.
-#include "sha-256.h" //Contains calc_sha_256 function.
-#include "login-register.h" //Main API for login and register functions. 
+#include "validation.h"		//Validation functions for e-mail,username and password.
+#include "hash-ops.h"		//Contains functions like hash copy, hash compare etc.
+#include "sha-256.h"		//Contains calc_sha_256 function.
+#include "login-register.h" //Main API for login and register functions.
 
 unsigned int getNumberOfUsers(unsigned int *numberOfUsers)
 {
 	//unsigned int numberOfUsers = 0;
-	char *fileName = "usersDbStats.bin";
+	//char *fileName = "../db/usersDbStats.bin";
 	FILE *file = NULL;
-	file = fopen(fileName, "rb+");
+	file = fopen(userDbStatsFileLocation, "rb+");
 	if (file == NULL)
 	{
-		printf("Cant open file: %s", fileName);
+		printf("Cant open file: %s", userDbStatsFileLocation);
 		return 0;
 	}
 	fseek(file, 0, SEEK_SET);
@@ -28,12 +28,12 @@ unsigned int getNumberOfUsers(unsigned int *numberOfUsers)
 
 static unsigned int getHashOfUserByUserName(const char *scanBuffer, uint8_t loginUserHash[32])
 {
-	char *fileName = "usersDb.bin";
+	//char *fileName = "../db/usersDb.bin";
 	FILE *file = NULL;
-	file = fopen(fileName, "rb+");
+	file = fopen(userDbFileLocation, "rb+");
 	if (file == NULL)
 	{
-		printf("Cant open file: %s", fileName);
+		printf("Cant open file: %s", userDbFileLocation);
 	}
 
 	unsigned int numberOfUsers = 0;
@@ -68,12 +68,12 @@ static unsigned int getHashOfUserByUserName(const char *scanBuffer, uint8_t logi
 by using the fseek we directly access username and password. Thus increasing overall performance*/
 static unsigned int getHashOfUserByUserNamePerformanceMode(const char *scanBuffer, uint8_t findedUserHash[32])
 {
-	char *fileName = "usersDb.bin";
+	//char *fileName = "../db/usersDb.bin";
 	FILE *file = NULL;
-	file = fopen(fileName, "rb+");
+	file = fopen(userDbFileLocation, "rb+");
 	if (file == NULL)
 	{
-		printf("Cant open file: %s", fileName);
+		printf("Cant open file: %s", userDbFileLocation);
 	}
 
 	unsigned int numberOfUsers = 0;
@@ -118,12 +118,11 @@ static unsigned int getHashOfUserByUserNamePerformanceMode(const char *scanBuffe
 
 static unsigned int saveNumberOfUsersToFile(const unsigned int numberOfUsers)
 {
-	char *fileName = "usersDbStats.bin";
 	FILE *file = NULL;
-	file = fopen(fileName, "rb+");
+	file = fopen(userDbStatsFileLocation, "rb+");
 	if (file == NULL)
 	{
-		printf("Cant open file: %s", fileName);
+		printf("Cant open file: %s", userDbStatsFileLocation);
 		return 0;
 	}
 	fseek(file, 0, SEEK_SET);
@@ -135,14 +134,13 @@ static unsigned int saveNumberOfUsersToFile(const unsigned int numberOfUsers)
 
 void cleanDatabase(void)
 {
-	fclose(fopen("usersDb.bin", "w"));
-	fclose(fopen("usersDbStats.bin", "w"));
+	fclose(fopen(userDbFileLocation, "w"));
+	fclose(fopen(userDbStatsFileLocation, "w"));
 }
 
 void loginUser(void)
 {
 
-	unsigned int numberOfUsers = 0;
 	char scanBuffer[245];
 	int isValid = 0;
 	int isUserName = 0;
@@ -282,12 +280,12 @@ void registerUser(void)
 	copyHash(newUser.hashedPassword, hash);
 
 	//Open file.
-	char *fileName = "usersDb.bin";
+	//char *fileName = "../db/usersDb.bin";
 	FILE *file = NULL;
-	file = fopen(fileName, "rb+");
+	file = fopen(userDbFileLocation, "rb+");
 	if (file == NULL)
 	{
-		printf("Cant open file: %s", fileName);
+		printf("Cant open file: %s", userDbFileLocation);
 	}
 
 	//Write user information to the file.
@@ -301,12 +299,12 @@ void registerUser(void)
 
 void readAllUsers(void)
 {
-	char *fileName = "usersDb.bin";
+	//char *fileName = "../db/usersDb.bin";
 	FILE *file = NULL;
-	file = fopen(fileName, "rb+");
+	file = fopen(userDbFileLocation, "rb+");
 	if (file == NULL)
 	{
-		printf("Cant open file: %s", fileName);
+		printf("Cant open file: %s", userDbFileLocation);
 	}
 
 	unsigned int numberOfUsers = 0;
