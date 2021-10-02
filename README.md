@@ -1,4 +1,4 @@
-[![CodeFactor](https://www.codefactor.io/repository/github/yusufss4/secure-login-register-app/badge?style=flat-square/main)](https://www.codefactor.io/repository/github/yusufss4/secure-login-register-app/overview/main)
+[![CodeFactor](https://www.codefactor.io/repository/github/yusufss4/secure-login-register-app/badge/main)](https://www.codefactor.io/repository/github/yusufss4/secure-login-register-app/overview/main)
 
 Secure Login Register App. 
 readme.md is still being in dev. 
